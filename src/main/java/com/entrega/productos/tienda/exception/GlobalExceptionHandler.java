@@ -10,13 +10,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
 
+public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     public record ErrorResponse(String timestamp, int status, String error, String mensaje) {}
 
     public record ValidationErrorResponse(
@@ -103,6 +106,16 @@ public class GlobalExceptionHandler {
         return construirRespuesta(
                 HttpStatus.BAD_REQUEST,
                 "El formato del JSON enviado es inválido. Verifica la sintaxis y los tipos de datos (números, textos, llaves y comas)."
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse manejarErrorInesperado(Exception ex) {
+        log.error("Error interno inesperado en la API", ex);
+        return construirRespuesta(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ocurrió un error interno en el servidor. Por favor, intenta nuevamente más tarde."
         );
     }
 

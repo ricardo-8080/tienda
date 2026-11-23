@@ -3,7 +3,9 @@ package com.entrega.productos.tienda.service;
 import com.entrega.productos.tienda.exception.ProductosDuplicadoException;
 import com.entrega.productos.tienda.exception.ProductosNoEncontradoException;
 import com.entrega.productos.tienda.exception.StockInsuficienteException;
+import com.entrega.productos.tienda.model.Categoria;
 import com.entrega.productos.tienda.model.Producto;
+import com.entrega.productos.tienda.repository.CategoriaRepository;
 import com.entrega.productos.tienda.repository.ProductoRepository;
 import com.entrega.productos.tienda.util.Validador;
 import org.springframework.stereotype.Service;
@@ -16,9 +18,11 @@ import java.util.List;
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public ProductoService(ProductoRepository productoRepository) {
+    public ProductoService(ProductoRepository productoRepository, CategoriaRepository categoriaRepository) {
         this.productoRepository = productoRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
     @Transactional
@@ -26,11 +30,13 @@ public class ProductoService {
         Validador.validarNombre(producto.getNombre());
         Validador.validarPrecio(producto.getPrecio());
         Validador.validarStock(producto.getStock());
-        Validador.validarCategoria(producto.getCategoria());
 
         if (productoRepository.existsByNombreIgnoreCase(producto.getNombre())) {
             throw new ProductosDuplicadoException("Error: ya existe un producto con el nombre: " + producto.getNombre());
         }
+
+        Categoria categoria = obtenerCategoriaValida(producto.getCategoria());
+        producto.setCategoria(categoria);
 
         producto.setId(null);
         return productoRepository.save(producto);
@@ -86,10 +92,13 @@ public class ProductoService {
             throw new ProductosDuplicadoException("Error: ya existe un producto con el nombre: " + productoActualizado.getNombre());
         }
 
+
+        Categoria categoria = obtenerCategoriaValida(productoActualizado.getCategoria());
+
         producto.setNombre(productoActualizado.getNombre());
         producto.setPrecio(productoActualizado.getPrecio());
         producto.setStock(productoActualizado.getStock());
-        producto.setCategoria(productoActualizado.getCategoria());
+        producto.setCategoria(categoria);
 
         return productoRepository.save(producto);
     }
@@ -102,4 +111,12 @@ public class ProductoService {
         productoRepository.deleteById(id);
     }
 
+    private Categoria obtenerCategoriaValida(Categoria categoria) {
+        if (categoria == null || categoria.getId() == null) {
+            throw new IllegalArgumentException("Debes indicar el ID de una categoría válida.");
+        }
+        return categoriaRepository.findById(categoria.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Error: no existe una categoría con el ID: " + categoria.getId()));
+    }
 }

@@ -3,6 +3,7 @@ package com.entrega.productos.tienda.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -35,9 +36,11 @@ public class Producto {
     @Column(nullable = false)
     private int stock;
 
-    @NotBlank(message = "La categoría es obligatoria")
-    @Column(nullable = false)
-    private String categoria;
+
+    @NotNull(message = "La categoría es obligatoria")
+    @ManyToOne
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Categoria categoria;
 
     @Override
     public String toString() {
@@ -45,6 +48,6 @@ public class Producto {
                 " | " + nombre +
                 " | $" + precio +
                 " | Stock: " + stock +
-                " | Categoría: " + categoria;
+                " | Categoría: " + (categoria != null ? categoria.getNombre() : "Sin categoría"); // <-- 3. AJUSTE EN TOSTRING
     }
 }
