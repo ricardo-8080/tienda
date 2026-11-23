@@ -8,7 +8,8 @@ import com.entrega.productos.tienda.repository.ProductoRepository;
 import com.entrega.productos.tienda.util.Validador;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Service
@@ -44,7 +45,8 @@ public class ProductoService {
         return productoRepository.findAll();
     }
 
-    public List<Producto> buscarConFiltros(String nombre, String categoria, Double precioMin, Double precioMax) {
+    public Page<Producto> buscarConFiltros(
+            String nombre, String categoria, Double precioMin, Double precioMax, Pageable pageable) {
         if (precioMin != null && precioMax != null && precioMin > precioMax) {
             throw new IllegalArgumentException("El precio mínimo no puede ser mayor que el precio máximo.");
         }
@@ -54,7 +56,7 @@ public class ProductoService {
         double min = (precioMin != null) ? precioMin : 0.0;
         double max = (precioMax != null) ? precioMax : Double.MAX_VALUE;
 
-        return productoRepository.buscarConFiltros(nombreFiltro, categoriaFiltro, min, max);
+        return productoRepository.buscarConFiltros(nombreFiltro, categoriaFiltro, min, max, pageable);
     }
 
     @Transactional
@@ -76,14 +78,18 @@ public class ProductoService {
     }
 
     @Transactional
-    public Producto actualizarProducto(int id, double nuevoPrecio, int nuevoStock) {
+    public Producto actualizarProducto(int id, Producto productoActualizado) {
         Producto producto = buscarProducto(id);
 
-        Validador.validarPrecio(nuevoPrecio);
-        Validador.validarStock(nuevoStock);
+        if (!producto.getNombre().equalsIgnoreCase(productoActualizado.getNombre())
+                && productoRepository.existsByNombreIgnoreCase(productoActualizado.getNombre())) {
+            throw new ProductosDuplicadoException("Error: ya existe un producto con el nombre: " + productoActualizado.getNombre());
+        }
 
-        producto.setPrecio(nuevoPrecio);
-        producto.setStock(nuevoStock);
+        producto.setNombre(productoActualizado.getNombre());
+        producto.setPrecio(productoActualizado.getPrecio());
+        producto.setStock(productoActualizado.getStock());
+        producto.setCategoria(productoActualizado.getCategoria());
 
         return productoRepository.save(producto);
     }
@@ -95,4 +101,5 @@ public class ProductoService {
         }
         productoRepository.deleteById(id);
     }
+
 }

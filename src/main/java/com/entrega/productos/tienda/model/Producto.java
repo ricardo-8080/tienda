@@ -1,6 +1,10 @@
 package com.entrega.productos.tienda.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,15 +22,20 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank(message = "El nombre del producto es obligatorio")
+    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
     @Column(nullable = false, unique = true)
     private String nombre;
 
+    @Positive(message = "El precio debe ser mayor a 0")
     @Column(nullable = false)
     private double precio;
 
+    @Min(value = 0, message = "El stock no puede ser negativo")
     @Column(nullable = false)
     private int stock;
 
+    @NotBlank(message = "La categoría es obligatoria")
     @Column(nullable = false)
     private String categoria;
 

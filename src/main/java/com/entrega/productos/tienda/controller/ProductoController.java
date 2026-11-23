@@ -2,11 +2,14 @@ package com.entrega.productos.tienda.controller;
 
 import com.entrega.productos.tienda.model.Producto;
 import com.entrega.productos.tienda.service.ProductoService;
+import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -19,12 +22,15 @@ public class ProductoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Producto>> listarTodos(
+    public ResponseEntity<Page<Producto>> listarTodos(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) Double precioMin,
-            @RequestParam(required = false) Double precioMax) {
-        return ResponseEntity.ok(productoService.buscarConFiltros(nombre, categoria, precioMin, precioMax));
+            @RequestParam(required = false) Double precioMax,
+            @ParameterObject @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        return ResponseEntity.ok(
+                productoService.buscarConFiltros(nombre, categoria, precioMin, precioMax, pageable)
+        );
     }
 
     @GetMapping("/{id}")
@@ -33,15 +39,16 @@ public class ProductoController {
     }
 
     @PostMapping
-    public ResponseEntity<Producto> agregar(@RequestBody Producto producto) {
-        Producto guardado = productoService.agregarProducto(producto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
+    public ResponseEntity<Producto> crear(@Valid @RequestBody Producto producto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productoService.agregarProducto(producto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizar(@PathVariable int id, @RequestBody Producto datosNuevos) {
-        Producto actualizado = productoService.actualizarProducto(id, datosNuevos.getPrecio(), datosNuevos.getStock());
-        return ResponseEntity.ok(actualizado);
+    public ResponseEntity<Producto> actualizar(
+            @PathVariable int id,
+            @Valid @RequestBody Producto producto) {
+        return ResponseEntity.ok(productoService.actualizarProducto(id, producto));
     }
 
     @DeleteMapping("/{id}")
