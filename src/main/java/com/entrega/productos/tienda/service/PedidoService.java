@@ -1,6 +1,7 @@
 package com.entrega.productos.tienda.service;
 
 import com.entrega.productos.tienda.dto.LineaPedidoRequest;
+import com.entrega.productos.tienda.model.EstadoPedido;
 import com.entrega.productos.tienda.model.LineaPedido;
 import com.entrega.productos.tienda.model.Pedido;
 import com.entrega.productos.tienda.model.Producto;
@@ -23,6 +24,15 @@ public class PedidoService {
 
     public List<Pedido> obtenerTodos() {
         return pedidoRepository.findAll();
+    }
+
+    @Transactional
+    public Pedido actualizarEstado(Integer id, EstadoPedido nuevoEstado) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No existe un pedido con el ID: " + id));
+
+        pedido.setEstado(nuevoEstado);
+        return pedidoRepository.save(pedido);
     }
 
     @Transactional

@@ -25,6 +25,13 @@ public class ProductoService {
         this.categoriaRepository = categoriaRepository;
     }
 
+    public List<Producto> obtenerProductosStockBajo(int minimo) {
+        if (minimo < 0) {
+            throw new IllegalArgumentException("El stock mínimo no puede ser negativo.");
+        }
+        return productoRepository.findByStockLessThanEqual(minimo);
+    }
+
     @Transactional
     public Producto agregarProducto(Producto producto) {
         Validador.validarNombre(producto.getNombre());
@@ -96,6 +103,8 @@ public class ProductoService {
         Categoria categoria = obtenerCategoriaValida(productoActualizado.getCategoria());
 
         producto.setNombre(productoActualizado.getNombre());
+        producto.setDescripcion(productoActualizado.getDescripcion());
+        producto.setImagenUrl(productoActualizado.getImagenUrl());
         producto.setPrecio(productoActualizado.getPrecio());
         producto.setStock(productoActualizado.getStock());
         producto.setCategoria(categoria);
@@ -119,4 +128,5 @@ public class ProductoService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Error: no existe una categoría con el ID: " + categoria.getId()));
     }
+    
 }

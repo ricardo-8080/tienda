@@ -16,7 +16,11 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Pedido {
+public class Pedido {;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoPedido estado = EstadoPedido.PENDIENTE;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,9 +35,14 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LineaPedido> lineas = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     public void agregarLinea(LineaPedido linea) {
         linea.setPedido(this);
         this.lineas.add(linea);
         this.total += linea.getSubtotal();
     }
+
 }

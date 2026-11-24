@@ -10,6 +10,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -55,5 +56,11 @@ public class ProductoController {
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         productoService.eliminarProducto(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/stock-bajo")
+    public ResponseEntity<List<Producto>> obtenerProductosStockBajo(
+            @RequestParam(defaultValue = "5") int minimo) {
+        return ResponseEntity.ok(productoService.obtenerProductosStockBajo(minimo));
     }
 }

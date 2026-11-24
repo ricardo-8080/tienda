@@ -41,13 +41,21 @@ public class Producto {
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
+    @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
+    @Column(length = 500)
+    private String descripcion;
+
+    @Column(name = "imagen_url", length = 500)
+    private String imagenUrl;
 
     @Override
     public String toString() {
         return "ID: " + id +
                 " | " + nombre +
+                " | Descripción: " + descripcion +
+                " | Imagen: " + imagenUrl +
                 " | $" + precio +
                 " | Stock: " + stock +
-                " | Categoría: " + (categoria != null ? categoria.getNombre() : "Sin categoría"); // <-- 3. AJUSTE EN TOSTRING
+                " | Categoría: " + (categoria != null ? categoria.getNombre() : "Sin categoría");
     }
 }
